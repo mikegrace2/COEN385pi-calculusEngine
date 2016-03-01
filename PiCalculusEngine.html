@@ -8,14 +8,21 @@
 <body>
 	<form id="pi" action="PiExecution.html">
 		<h1>Pi-Calculus Engine</h1>
-		<p>Pi-Calculus code:</p>
+		<p><b>Pi-Calculus code:</b><br>
+			use simplified notation, maximum are 4 lines<br>
+			Use only: ? ! new() . | ( ) =<br>
+			variables: x, y, z <br>
+			channels: a, b, c, d <br>
+			processes: P, Q, R, S
+		</p>
 		<p>
-			<textarea id="pi-code" rows="5" cols="50" style="background-color:beige;">
+		<textarea id="pi-code" rows="5" cols="50" style="background-color:beige;">
 Printer=b?doc.Println(doc).Printer
 Server=a!b.Server
 Client=a?p.p!doc
 Life=new(a).new(b).(Client|Server|Printer)
-			</textarea>
+
+		</textarea>
 		</p>
 		<input type="submit" id="execute" value="Execute it!" onclick="return parseIt()"/>
 	</form>

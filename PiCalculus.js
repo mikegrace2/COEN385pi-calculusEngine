@@ -1,6 +1,10 @@
 function parseIt(){
-	alert('Parse it!');
+	//alert('Parse it!');
 	return true;
+}
+
+function goBack() {
+    window.history.back()
 }
 
 /*function getItemPrice(item){
