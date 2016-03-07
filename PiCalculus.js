@@ -120,14 +120,14 @@ Function.prototype.toString = function toStringFunction(){
 }
 
 // New -------------------------
-function New(my_new){
-	this.new=my_new;
+function New(my_channel){
+	this.channel=my_channel;
 }
 
 New.prototype.toString = function toStringNew(){
-	var myString="new_";
-	myString=myString+this.new;
-	return myString;
+	var myString="new(";
+	myString=myString+this.channel.toString();
+	return myString+")";
 }
 
 //  -------------------------
@@ -173,8 +173,19 @@ function parsingALine(process_obj){
 			process_obj.elements.push(new Connector(process_obj.code[i]));
 			text=""; // reset it
 		}else if (process_obj.code[i]=='(' || process_obj.code[i]==')'){
-			process_obj.elements.push(identifyTextSegment(text));
-			process_obj.elements.push(new Parentheses(process_obj.code[i]));
+			var obj=identifyTextSegment(text);
+			process_obj.elements.push(obj);
+
+			// Special case for "new(a)"
+			if (obj instanceof New){
+				var next_channel_obj=identifyTextSegment(process_obj.code[++i]);
+				obj.channel=next_channel_obj;
+				alert(next_channel_obj);
+				++i;
+			}else{
+				var obj=identifyTextSegment(text);
+				process_obj.elements.push(new Parentheses(process_obj.code[i]));
+			}
 			text=""; // reset it
 		} else {
 			// add next letter to text
@@ -238,7 +249,7 @@ function identifyTextSegment(input){
 	}
 
 	if (text.length==3 && text=="new"){
-		return new New("new");
+		return new New(null);
 	}
 
 	for (var i=0;i<process_array.length;i++){
