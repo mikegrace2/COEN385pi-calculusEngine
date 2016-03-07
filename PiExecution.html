@@ -9,6 +9,7 @@
 	<canvas id="myCanvas" width="815" height="400" style="border:1px solid black;">
 		Your browser does not support the canvas element.
 	</canvas>
+
 	<script>
 		// Get the URL parameters **************************************************
 		startNode = getUrlVars()["start"];
@@ -29,10 +30,11 @@
 			window.history.back();
 		}
 
-		// Fill up process_array array with submitted objects  *******************
+		// Fill and parse process_array with submitted objects  *******************
 		for(var i=0;i<picode_array.length;i++){
 			var line_equal_array = picode_array[i].split('=');
-			var tempObj=new Process(line_equal_array[0],line_equal_array[1],-1,-1);
+			var tempObj=new ProcessDefinition(line_equal_array[0],line_equal_array[1],-1,-1, new Array());
+			parsingALine(tempObj);
 			process_array.push(tempObj); // add the current process to the process array
 		}
 
@@ -78,7 +80,7 @@
 		<b>Parsed Version:</b><br>
 		<script>
 			for(var i=0;i<process_array.length;i++){
-				parsingALine(process_array[i]);
+				document.write(process_array[i]);
 			}
 		</script>
 		<hr>

@@ -1,15 +1,144 @@
 // Global variable ***********************************************************
-var startNode= null;
-var main_document=null;
-var picode=null;
+var startNode= null; // Which is the start node
+var main_document=null; // Which is the main document for send it around
+var picode=null; // Actually the code from the main page
 var process_array=new Array(); // Collects all processes
 
 // Classes *******************************************************************
-function Process(my_process_name, my_code, my_x, my_y){
+function ProcessDefinition(my_process_name, my_code, my_x, my_y, my_elements){
 	this.process=my_process_name;
 	this.code=my_code;
 	this.x_coord=my_x;
 	this.y_coord=my_y;
+	this.elements=my_elements;
+}
+
+// Print all elements
+ProcessDefinition.prototype.toString = function toStringProcessDefinition(){
+	var myString="";
+	myString=myString+identifyTextSegment(this.process)+" = ";
+	for (var i=0;i<this.elements.length;i++){
+		myString=myString+this.elements[i];
+	}
+	myString=myString+" --- (Canvas x="+this.x_coord+" y="+this.y_coord+")\n";
+	myString=myString+"<br>\n";
+	return myString;
+}
+
+// Process -------------------------
+function Process(my_process){
+	this.process=my_process;
+}
+
+Process.prototype.toString = function toStringProcess(){
+	if (this.process==startNode){
+		var myString="<font color='0000ff'>start_process_";
+		myString=myString+this.process;
+		return myString+"</font>";
+	}else{
+		var myString="<font color='ff00ff'>process_";
+		myString=myString+this.process;
+		return myString+"</font>";
+	}
+}
+
+// Connector -------------------------
+function Connector(my_connector){
+	this.connector=my_connector;
+}
+
+Connector.prototype.toString = function toStringConnector(){
+	var myString=" <font color='ff0000'>";
+	myString=myString+this.connector+"</font> ";
+	return myString;
+}
+
+// Parentheses -------------------------
+function Parentheses(my_parentheses){
+	this.parentheses=my_parentheses;
+}
+
+Parentheses.prototype.toString = function toStringParentheses(){
+	var myString="<font color='00ff00'>";
+	myString=myString+this.parentheses+"</font>";
+	return myString;
+}
+
+// Variable -------------------------
+function Variable(my_variable){
+	this.variable=my_variable;
+}
+
+Variable.prototype.toString = function toStringVariable(){
+	var myString="";
+	myString=myString+this.variable;
+	return myString;
+}
+
+// TempVariable -------------------------
+function TempVariable(my_temp_variable){
+	this.temp_variable=my_temp_variable;
+}
+
+TempVariable.prototype.toString = function toStringTempVariable(){
+	var myString="temp_var_";
+	myString=myString+this.temp_variable;
+	return myString;
+}
+
+// Channel -------------------------
+function Channel(my_channel){
+	this.channel=my_channel;
+}
+
+Channel.prototype.toString = function toStringTempChannel(){
+	var myString="channel_";
+	myString=myString+this.channel;
+	return myString;
+}
+
+// Document ------------------------
+function Document(my_document){
+	this.document=my_document;
+}
+
+Document.prototype.toString = function toStringDocument(){
+	var myString="document_";
+	myString=myString+this.document;
+	return myString;
+}
+
+// Function -------------------------
+function Function(my_function){
+	this.function=my_function;
+}
+
+Function.prototype.toString = function toStringFunction(){
+	var myString="function_";
+	myString=myString+this.function;
+	return myString;
+}
+
+// New -------------------------
+function New(my_new){
+	this.new=my_new;
+}
+
+New.prototype.toString = function toStringNew(){
+	var myString="new_";
+	myString=myString+this.new;
+	return myString;
+}
+
+//  -------------------------
+function Error(my_error){
+	this.error=my_error;
+}
+
+Error.prototype.toString = function toStringNew(){
+	var myString="ERROR_";
+	myString=myString+this.error;
+	return myString;
 }
 
 // functions *****************************************************************
@@ -30,63 +159,43 @@ function goBack() {
 
 // Parsing part ****************************************************************
 // connetors: ? ! new() . | ( ) =
-// variables: x, y, z
-// channels: a, b, c, d
-// processes: P, Q, R, S
 function parsingALine(process_obj){
-	if (process_obj.process==startNode){
-		document.write("<font color='0000ff'>start_"+identifyTextSegment(process_obj.process)+"</font><font color='0000ff'> = </font>");
-	}else{
-		document.write("<font color='ff00ff'>"+identifyTextSegment(process_obj.process)+"</font><font color='0000ff'> = </font>");
-	}
-
 	var text="";
 	for (var i=0;i<process_obj.code.length;i++){
-		if (process_obj.code[i]=='?'){
-			document.write(identifyTextSegment(text));
-			text="";
-			document.write(" <font color='ff0000'>?</font> ");
-			continue;
-		}else if (process_obj.code[i]=='!'){
-			document.write(identifyTextSegment(text));
-			text="";
-			document.write(" <font color='ff0000'>!</font> ");
-			continue;
-		}else if (process_obj.code[i]=='.'){
-			document.write(identifyTextSegment(text));
-			text="";
-			document.write(" <font color='ff0000'>.</font> ");
-			continue;
-		}else if (process_obj.code[i]=='|'){
-			document.write(identifyTextSegment(text));
-			text="";
-			document.write(" <font color='ff0000'>|</font> ");
-			continue;
-		}else if (process_obj.code[i]=='('){
-			document.write(identifyTextSegment(text));
-			text="";
-			document.write("<font color='00ff00'>(</font>");
-			continue;
-		}else if (process_obj.code[i]==')'){
-			document.write(identifyTextSegment(text));
-			text="";
-			document.write("<font color='00ff00'>)</font>");
-			continue;
+		if (
+			process_obj.code[i]=='?' ||
+			process_obj.code[i]=='!' ||
+			process_obj.code[i]=='.' ||
+			process_obj.code[i]=='+' ||
+			process_obj.code[i]=='|'
+		){
+			process_obj.elements.push(identifyTextSegment(text));
+			process_obj.elements.push(new Connector(process_obj.code[i]));
+			text=""; // reset it
+		}else if (process_obj.code[i]=='(' || process_obj.code[i]==')'){
+			process_obj.elements.push(identifyTextSegment(text));
+			process_obj.elements.push(new Parentheses(process_obj.code[i]));
+			text=""; // reset it
+		} else {
+			// add next letter to text
+			text=text.concat(process_obj.code[i]);
 		}
-
-		// text
-		text=text.concat(process_obj.code[i]);
 	}
 
+	// don't forget the last text
 	if (text.length!=0){
-		document.write(identifyTextSegment(text));
+		process_obj.elements.push(identifyTextSegment(text));
 		text="";
 	}
-	document.write("<br>\n");
 }
 
-// variables: x, y, z
-// channels: a, b, c, d
+// Identify
+// processes: P, Q, R, S
+// variables: x, y, z and temp variables
+// channels: a, b, c, d, e, f
+// procees
+// document
+// function
 function identifyTextSegment(input){
 	var text=input.trim();
 
@@ -97,55 +206,55 @@ function identifyTextSegment(input){
 	// Must be a variable or a channel
 	if (text.length==1){
 		if (text[0]=='a'){
-			return "channel_a";
+			return new Channel("a");
 		}
 		else if (text[0]=='b'){
-			return "channel_b";
+			return new Channel("b");
 		}
 		else if (text[0]=='c'){
-			return "channel_c";
+			return new Channel("c");
 		}
 		else if (text[0]=='d'){
-			return "channel_d";
+			return new Channel("d");
 		}
 		else if (text[0]=='e'){
-			return "channel_e";
+			return new Channel("e");
 		}
 		else if (text[0]=='f'){
-			return "channel_f";
+			return new Channel("f");
 		}
 		else if (text[0]=='x'){
-			return "var_x";
+			return new Variable("x");
 		}
 		else if (text[0]=='y'){
-			return "var_y";
+			return new Variable("y");
 		}
 		else if (text[0]=='z'){
-			return "var_z";
+			return new Variable("z");
 		}
 		else{
-			return "temp_"+text[0];
+			return new TempVariable(text[0]);
 		}
 	}
 
 	if (text.length==3 && text=="new"){
-		return "new";
+		return new New("new");
 	}
 
 	for (var i=0;i<process_array.length;i++){
 		if (text==process_array[i].process){
-			return "process_"+process_array[i].process;
+			return new Process(process_array[i].process);
 		}
 	}
 
 	if (text=== main_document){
-		return "document_"+text;
+		return new Document(text);
 	}
 
 	if (text[0] === text[0].toUpperCase()){
-		return "Function_"+text;
+		return new Function(text);
 	}else{
-		return "temp_"+text;
+		return new Error(text);
 	}
 }
 
