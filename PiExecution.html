@@ -6,142 +6,83 @@
 	<script src="PiCalculus.js" type="text/javascript"></script>
 </head>
 <body>
+	<canvas id="myCanvas" width="815" height="400" style="border:1px solid black;">
+		Your browser does not support the canvas element.
+	</canvas>
+	<script>
+		// Get the URL parameters **************************************************
+		startNode = getUrlVars()["start"];
+		main_document=getUrlVars()["main_document"];
+		picode = decodeURIComponent(getUrlVars()["picode"]); // get picode
+		var picode_array = picode.split('\n'); // split it up into lines
 
-<canvas id="myCanvas" width="800" height="400">
-	Your browser does not support the canvas element.
-</canvas>
+		// Delete unused lines ****************************************************
+		for(var i=0;i<picode_array.length;i++){
+			if (picode_array[i].length<=2){
+				picode_array.splice(i, i); // delete element without leaving a hole
+			}
+		}
 
-<p>
-<script>
-	var canvas = document.getElementById("myCanvas");
-	var ctx = canvas.getContext("2d");
+		// Check that there are only 6 lines **************************************
+		if (picode_array.length>6){
+			alert("ERROR too many lines only 6 are allowed!");
+			window.history.back();
+		}
 
-//var radius = canvas.height / 2;
-//ctx.translate(radius, radius);
-//radius = radius * 0.90
-//setInterval(drawClock, 1000);
+		// Fill up process_array array with submitted objects  *******************
+		for(var i=0;i<picode_array.length;i++){
+			var line_equal_array = picode_array[i].split('=');
+			var tempObj=new Process(line_equal_array[0],line_equal_array[1],-1,-1);
+			process_array.push(tempObj); // add the current process to the process array
+		}
 
-/*function drawClock() {
-  drawFace(ctx, radius);
-  drawNumbers(ctx, radius);
-  drawTime(ctx, radius);
-}
+		// CANVAS *********************************************************
+		var canvas = document.getElementById("myCanvas");
+		var ctx = canvas.getContext("2d");
 
-function drawFace(ctx, radius) {
-  var grad;
-  ctx.beginPath();
-  ctx.arc(0, 0, radius, 0, 2*Math.PI);
-  ctx.fillStyle = 'white';
-  ctx.fill();
-  grad = ctx.createRadialGradient(0,0,radius*0.95, 0,0,radius*1.05);
-  grad.addColorStop(0, '#333');
-  grad.addColorStop(0.5, 'white');
-  grad.addColorStop(1, '#333');
-  ctx.strokeStyle = grad;
-  ctx.lineWidth = radius*0.1;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(0, 0, radius*0.1, 0, 2*Math.PI);
-  ctx.fillStyle = '#333';
-  ctx.fill();
-}
+		ctx.font = "30px Arial";
+		ctx.fillStyle = '#000000';
 
-function drawNumbers(ctx, radius) {
-  var ang;
-  var num;
-  ctx.font = radius*0.15 + "px arial";
-  ctx.textBaseline="middle";
-  ctx.textAlign="center";
-  for(num = 1; num < 13; num++){
-    ang = num * Math.PI / 6;
-    ctx.rotate(ang);
-    ctx.translate(0, -radius*0.85);
-    ctx.rotate(-ang);
-    ctx.fillText(num.toString(), 0, 0);
-    ctx.rotate(ang);
-    ctx.translate(0, radius*0.85);
-    ctx.rotate(-ang);
-  }
-}
+		var headline="";
+		for(var i=process_array.length-1;i>=0;--i){
+			headline=headline+process_array[i].process+"->";
+		}
+		headline=headline.substr(0, headline.length-2);
+		ctx.strokeText(headline, 5, 30);
 
-function drawTime(ctx, radius){
-    var now = new Date();
-    var hour = now.getHours();
-    var minute = now.getMinutes();
-    var second = now.getSeconds();
-    //hour
-    hour=hour%12;
-    hour=(hour*Math.PI/6)+
-    (minute*Math.PI/(6*60))+
-    (second*Math.PI/(360*60));
-    drawHand(ctx, hour, radius*0.5, radius*0.07);
-    //minute
-    minute=(minute*Math.PI/30)+(second*Math.PI/(30*60));
-    drawHand(ctx, minute, radius*0.8, radius*0.07);
-    // second
-    second=(second*Math.PI/30);
-    drawHand(ctx, second, radius*0.9, radius*0.02);
-}
-
-function drawHand(ctx, pos, length, width) {
-    ctx.beginPath();
-    ctx.lineWidth = width;
-    ctx.lineCap = "round";
-    ctx.moveTo(0,0);
-    ctx.rotate(pos);
-    ctx.lineTo(0, -length);
-    ctx.stroke();
-    ctx.rotate(-pos);
-}*/
-
-	/*ctx.fillStyle = "#FF0000";
-	ctx.fillRect(0,0,150,75);
-
-	ctx.moveTo(0,0);
-	ctx.lineTo(200,100);
- 	ctx.stroke();
-
- 	ctx.beginPath();
-	ctx.arc(95,50,40,0,2*Math.PI);
-	ctx.stroke();
-
-	// Create gradient
-	var grd=ctx.createLinearGradient(0,0,200,0);
-	grd.addColorStop(0,"red");
-	grd.addColorStop(1,"white");
-
- 	// Fill with gradient
-	ctx.fillStyle=grd;
-	ctx.fillRect(10,10,150,80);*/
-
-	ctx.font = "30px Arial";
-	ctx.strokeText("Client->Server->Printer",10,50);
-
-	ctx.font = "30px Comic Sans MS";
-	ctx.fillStyle = "red";
-	ctx.textAlign = "center";
-	ctx.fillText("Hello World", canvas.width/2, canvas.height/2);
-
-	var img = new Image();
-	img.src = "PrinterSequence.jpg";
-	ctx.drawImage(img, 50, 50);
-</script>
-</p>
-
-<p>
-<textarea id="pi-code" rows="20" cols="100" style="background-color:beige;">
-Client: created
-Server: created
-Printer: created
-Client: create p?doc document and send it with channel a
-Server: receives doc and send it with channel b
-Printer: Receives document from channel b
-Printer: Println(doc)
-Printer: done
-Server: done
-Client: done
-</textarea>
-</p>
-<button onclick="goBack()">Go Back</button>
+		var a=100;
+		var b=55;
+		for(var i=process_array.length-1;i>=0;--i){
+			if (process_array[i].process==startNode){
+				drawUseCase(ctx, 5, 40);
+				process_array[i].x_coord=5;
+				process_array[i].y_coord=40
+			}else{
+				drawBoxWithTextAndSwimLane(ctx, a, b, process_array[i].process);
+				process_array[i].x_coord=a;
+				process_array[i].y_coord=b;
+				a+=150;
+			}
+		}
+	</script>
+	<p>
+		<hr>
+		<b>Original Version:</b><br>
+		<script>
+			// Print out the original version
+			for(var i=0;i<picode_array.length;i++){
+				document.writeln(picode_array[i]+"<br>");
+			}
+		</script>
+		<hr>
+		<b>Parsed Version:</b><br>
+		<script>
+			for(var i=0;i<process_array.length;i++){
+				parsingALine(process_array[i]);
+			}
+		</script>
+		<hr>
+	</p>
+	<button onclick="goBack()">Go Back</button>
 </body>
 </html>

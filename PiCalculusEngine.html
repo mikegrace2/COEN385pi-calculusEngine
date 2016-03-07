@@ -5,26 +5,55 @@
 	<title>Pi-Calculus</title>
 	<script src="PiCalculus.js" type="text/javascript"></script>
 </head>
-<body>
-	<form id="pi" action="PiExecution.html">
+<body onload="selectExample('1');">
+	<form id="pi" action="PiExecution.html" method="get">
 		<h1>Pi-Calculus Engine</h1>
-		<p><b>Pi-Calculus code:</b><br>
-			use simplified notation, maximum are 4 lines<br>
-			Use only: ? ! new() . | ( ) =<br>
-			variables: x, y, z <br>
-			channels: a, b, c, d <br>
-			processes: P, Q, R, S
-		</p>
+		<table border="0">
+			<tr>
+				<th><b>Pi-Calculus code</b></th>
+				<td>use simplified notation, maximum are 6 lines</td>
+			</tr>
+			<tr>
+				<th><b>Use only</b></th>
+				<td>? ! new() . | ( ) =</td>
+			</tr>
+			<tr>
+				<th><b>variables</b></th>
+				<td>x, y, z </td>
+			</tr>
+			<tr>
+				<th><b>channels</b></th>
+				<td>a, b, c, d, e, f</td>
+			</tr>
+			<tr>
+				<th><b>processes</b></th>
+				<td>Any name of length 7</td>
+			</tr>
+			<tr>
+				<th><b>functions</b></th>
+				<td>Name up to 7 letters, starting with a big captial, and is not in a process definition</td>
+			</tr>
+			<tr><th>&nbsp;</th><td>&nbsp;</td></tr>
+			<tr>
+				<th><b>Which example?</b></th>
+				<td>
+					<select>
+						<option value="ex1" onclick="selectExample('1');">Example 1</option>
+						<option value="ex2" onclick="selectExample('2');">Example 2</option>
+						<option value="ex3" onclick="selectExample('3');">Example 3</option>
+					</select>
+				</td>
+			</tr>
+		</table>
 		<p>
-		<textarea id="pi-code" rows="5" cols="50" style="background-color:beige;">
-Printer=b?doc.Println(doc).Printer
-Server=a!b.Server
-Client=a?p.p!doc
-Life=new(a).new(b).(Client|Server|Printer)
-
+		Whats your starting process?
+		<input type="text" name="start" value="Life"/><br/>
+		Whats your main document?
+		<input type="text" name="main_document" value="doc"/><br/>
+		<textarea name="picode" rows="7" cols="100" style="background-color:beige;">
 		</textarea>
 		</p>
-		<input type="submit" id="execute" value="Execute it!" onclick="return parseIt()"/>
+		<input type="submit" value="Execute it!" onclick="checkIt()"/>
 	</form>
 </body>
 </html>
