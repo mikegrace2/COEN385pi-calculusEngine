@@ -1,8 +1,8 @@
 // Global variable ***********************************************************
 var startNode= null; // Which is the start node
 var main_document=null; // Which is the main document for send it around
-var picode=null; // Actually the code from the main page
 var process_array=new Array(); // Collects all processes
+var public_channels_array=new Array(); // contains public channels
 
 // Classes *******************************************************************
 function ProcessDefinition(my_process_name, my_code, my_x, my_y, my_elements){
@@ -20,7 +20,7 @@ ProcessDefinition.prototype.toString = function toStringProcessDefinition(){
 	for (var i=0;i<this.elements.length;i++){
 		myString=myString+this.elements[i];
 	}
-	myString=myString+" --- (Canvas x="+this.x_coord+" y="+this.y_coord+")\n";
+	//myString=myString+" --- (Canvas x="+this.x_coord+" y="+this.y_coord+")\n";
 	myString=myString+"<br>\n";
 	return myString;
 }
@@ -148,11 +148,6 @@ function getUrlVars() {
 	return vars;
 }
 
-function checkIt(){
-	//alert('Check OK!');
-	return true;
-}
-
 function goBack() {
 	window.history.back();
 }
@@ -178,9 +173,10 @@ function parsingALine(process_obj){
 
 			// Special case for "new(a)"
 			if (obj instanceof New){
-				var next_channel_obj=identifyTextSegment(process_obj.code[++i]);
+				var next_channel_obj=identifyTextSegment(process_obj.code[++i]); // ++i we do not need '('
 				obj.channel=next_channel_obj;
-				++i;
+				public_channels_array.push(obj); // add it to public channels
+				++i;// we also do not need ')'
 			}else{
 				var obj=identifyTextSegment(text);
 				process_obj.elements.push(new Parentheses(process_obj.code[i]));
