@@ -180,7 +180,6 @@ function parsingALine(process_obj){
 			if (obj instanceof New){
 				var next_channel_obj=identifyTextSegment(process_obj.code[++i]);
 				obj.channel=next_channel_obj;
-				alert(next_channel_obj);
 				++i;
 			}else{
 				var obj=identifyTextSegment(text);
