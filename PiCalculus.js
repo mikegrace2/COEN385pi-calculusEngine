@@ -17,7 +17,7 @@ function ProcessDefinition(my_process_name, my_code, my_x, my_y, my_elements, my
 	this.getFirstChannelFromTheBack=getFirstChannelFromTheBack;
 	this.containsChannel=containsChannel;
 	this.getChannelAfterExclamationMark=getChannelAfterExclamationMark;
-	this.containsFunction=containsFunction;
+	this.docContainsFunction=docContainsFunction;
 }
 
 function searchForDoc(){
@@ -30,7 +30,7 @@ function searchForDoc(){
 	return false;
 }
 
-function containsFunction(){
+function docContainsFunction(){
 	for (var i=0;i<this.elements.length;i++){
 		if (this.elements[i] instanceof Document && this.elements[i].document==main_document){
 			if (this.elements[i-2] instanceof Function){
@@ -56,7 +56,6 @@ function getChannelAfterExclamationMark(my_channel){
 	for (var i=0;i<this.elements.length;i++){
 		if (this.elements[i] instanceof Channel && this.elements[i].channel==my_channel){
 			if (this.elements[i+1] instanceof Connector && this.elements[i+1].connector == '!'){
-				//alert("I am in!="+this.elements[i+2].channel);
 				return this.elements[i+2].channel;
 			}
 		}

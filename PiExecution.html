@@ -77,95 +77,97 @@
 		}
 
 		// ***************************************************************************************************
-		// Create lines **************************************************************************************
-		var process_array_clone = process_array.slice(0);
+		// Difficult part ************************************************************************************
+		// Draw lines ****************************************************************************************
+		var process_array_clone = process_array.slice(0); // clone array
+		var myAddX=50; // start coordinates for the line drawing
+		var myAddY=100;
 
-		// 1. search for the document in the first elements
-		var docLink={
+		// step 1 --------------------------------------------------------------------------------------------
+		// Draw from useCase to the first object --- there is no real hint in the pi-calculus notation, but it makes sense in a sequence diagram
+		// Create a data object
+		var docLink0={
+			processDef_from:process_array_clone[0],
+			processDef_to:process_array_clone[1],
+			which_channel_from:null,
+			which_channel_next:null,
+			text:"create("+main_document+")"
+		};
+
+		drawLineWithText(
+			docLink0.processDef_from.x_coord+20, docLink0.processDef_from.y_coord+115,
+			docLink0.processDef_to.x_coord+myAddX, docLink0.processDef_to.y_coord+myAddY,
+			docLink0.text);
+
+		// step 2 --------------------------------------------------------------------------------------------
+		// Create a data object
+		var docLink1={
 			processDef_from:null,
 			processDef_to:null,
 			which_channel_from:null,
-			which_channel_next:null
+			which_channel_next:null,
+			text:"send("+main_document+")"
 		};
 
 		// Search for the first doc occurence
-		for(var i=1;i<process_array_clone.length;i++){
+		var i=1;
+		for(;i<process_array_clone.length;i++){
 			// search for the document
 			if (process_array_clone[i].searchForDoc()==true){
-				// First hit is the right one
-				docLink.processDef_from=process_array[i];
-				process_array_clone.splice(i, i);
-				//alert("processDef has doc inside="+docLink.processDef_from.process);
+				docLink1.processDef_from=process_array[i];
 				break;
 			}
 		}
 
 		// Get the channel assigned to this document
-		docLink.which_channel_from=docLink.processDef_from.getFirstChannelFromTheBack();
+		docLink1.which_channel_from=docLink1.processDef_from.getFirstChannelFromTheBack();
 
 		// Search in the following processDefs for the same channel
-		for(var i=1;i<process_array_clone.length;i++){
-			var isContainingChannel=process_array_clone[i].containsChannel(docLink.which_channel_from);
+		for(;i<process_array_clone.length;i++){
+			var isContainingChannel=process_array_clone[i].containsChannel(docLink1.which_channel_from);
 			if (isContainingChannel==true){
-				docLink.processDef_to=process_array_clone[i];
-				//alert("PROCESS="+process_array_clone[i].process+" has channel="+docLink.which_channel_from);
+				docLink1.processDef_to=process_array_clone[i];
 			}
 		}
 
-		//alert("Draw a line from "+docLink.processDef_from.process+" to "+docLink.processDef_to.process);
-		var myAddX=50;
-		var myAddY=100;
-
-		// Draw from use case to client
+		// Draw a line
+		myAddY+=10; // make it a more visible that we have different lines
 		drawLineWithText(
-			process_array_clone[0].x_coord+20, process_array_clone[0].y_coord+115,
-			docLink.processDef_from.x_coord+myAddX, docLink.processDef_from.y_coord+myAddY,
-			"create("+main_document+")");
+			docLink1.processDef_from.x_coord+myAddX, docLink1.processDef_from.y_coord+myAddY,
+			docLink1.processDef_to.x_coord+myAddX, docLink1.processDef_to.y_coord+myAddY,
+			docLink1.text);
 
-		// Draw client to server
-		myAddY+=10;
-		drawLineWithText(
-			docLink.processDef_from.x_coord+myAddX, docLink.processDef_from.y_coord+myAddY,
-			docLink.processDef_to.x_coord+myAddX, docLink.processDef_to.y_coord+myAddY,
-			"send("+main_document+")");
-
-		// ***************************************************************************************************
-		// Next step get the next link ***********************************************************************
+		// step 3 -----------------------------------------------------------------------------------------
 		// Get from server the next link
-		docLink.which_channel_next=docLink.processDef_to.getChannelAfterExclamationMark(docLink.which_channel_from);
-		//alert('Next channel to find='+docLink.which_channel_next);
-
-		// Search for the two processDefs which contains the channel
+		// Create a data object
 		var docLink2={
 			processDef_from:null,
 			processDef_to:null,
-			which_channel_from:docLink.which_channel_next,
-			which_channel_next:docLink.which_channel_next
+			which_channel_from:docLink1.processDef_to.getChannelAfterExclamationMark(docLink1.which_channel_from),
+			which_channel_next:docLink1.processDef_to.getChannelAfterExclamationMark(docLink1.which_channel_from),
+			text:"send("+main_document+")"
 		};
 
 		var isFirst=true;
-		var containsFunction="send";
-		for(var i=1;i<process_array_clone.length;i++){
-			//alert("process="+process_array_clone[i].process);
-			if (process_array_clone[i].containsChannel(docLink.which_channel_next)){
+		for(i=1;i<process_array_clone.length;i++){
+			if (process_array_clone[i].containsChannel(docLink2.which_channel_next)){
 				if (isFirst==true){
-					//alert("YES process1="+process_array_clone[i].process+" has channel="+docLink.which_channel_next);
 					isFirst=false;
 					docLink2.processDef_from=process_array_clone[i];
-				}else{
-					//alert("YES process2="+process_array_clone[i].process+" has channel="+docLink.which_channel_next);
+				}else{ // wait for the first occurence
 					docLink2.processDef_to=process_array_clone[i];
-					containsFunction=process_array_clone[i].containsFunction();
+					docLink2.text="("+process_array_clone[i].docContainsFunction()+")";
+					break;
 				}
 			}
 		}
 
-		// Draw client to server
-		myAddY+=10;
+		// Draw a line
+		myAddY+=10; // make it a more visible that we have different lines
 		drawLineWithText(
 			docLink2.processDef_from.x_coord+myAddX, docLink2.processDef_from.y_coord+myAddY,
 			docLink2.processDef_to.x_coord+myAddX, docLink2.processDef_to.y_coord+myAddY,
-			containsFunction+"("+main_document+")");
+			docLink2.text);
 	</script>
 	<p>
 		<hr>
