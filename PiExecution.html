@@ -170,6 +170,22 @@
 			docLink2.processDef_from.x_coord+myAddX, docLink2.processDef_from.y_coord+myAddY,
 			docLink2.processDef_to.x_coord+myAddX, docLink2.processDef_to.y_coord+myAddY,
 			docLink2.text);
+
+		// step 4 are there more functions ----------------------------------------------------------------------
+		for(i=1;i<process_array_clone.length;i++){
+			if (process_array_clone[i].boolContainsFunction() && process_array_clone[i].process!=docLink2.processDef_to.process){
+				//alert("YEAAAHHHHHH="+process_array_clone[i].process+" == "+docLink2.processDef_to.process);
+
+				// Draw a line
+				myAddY+=25; // make it a more visible that we have different lines
+				drawLineWithText(
+				docLink2.processDef_from.x_coord+myAddX, docLink2.processDef_from.y_coord+myAddY,
+				process_array_clone[i].x_coord+myAddX,process_array_clone[i].y_coord+myAddY,
+				process_array_clone[i].docContainsFunction().toString());
+
+				break;
+			}
+		}
 	</script>
 	<p>
 		<hr>

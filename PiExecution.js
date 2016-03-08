@@ -19,6 +19,7 @@ function ProcessDefinition(my_process_name, my_code, my_x, my_y, my_elements, my
 	this.containsChannel=containsChannel;
 	this.getChannelAfterExclamationMark=getChannelAfterExclamationMark;
 	this.docContainsFunction=docContainsFunction;
+	this.boolContainsFunction=boolContainsFunction;
 }
 
 function searchForDoc(my_doc){
@@ -39,6 +40,16 @@ function docContainsFunction(){
 	}
 
 	return "";
+}
+
+function boolContainsFunction(){
+	for (var i=0;i<this.elements.length;i++){
+		if (this.elements[i] instanceof Function){
+			return true;
+		}
+	}
+
+	return false;
 }
 
 function getFirstChannelFromTheBack(){
