@@ -5,12 +5,70 @@ var process_array=new Array(); // Collects all processes
 var public_channels_array=new Array(); // contains public channels
 
 // Classes *******************************************************************
-function ProcessDefinition(my_process_name, my_code, my_x, my_y, my_elements){
+// Process Definition ------------------------------------------------------------------
+function ProcessDefinition(my_process_name, my_code, my_x, my_y, my_elements, my_sequence){
 	this.process=my_process_name;
 	this.code=my_code;
 	this.x_coord=my_x;
 	this.y_coord=my_y;
 	this.elements=my_elements;
+	this.sequence=my_sequence;
+	this.searchForDoc=searchForDoc;
+	this.getFirstChannelFromTheBack=getFirstChannelFromTheBack;
+	this.containsChannel=containsChannel;
+	this.getChannelAfterExclamationMark=getChannelAfterExclamationMark;
+	this.containsFunction=containsFunction;
+}
+
+function searchForDoc(){
+	for (var i=0;i<this.elements.length;i++){
+		if (this.elements[i] instanceof Document && this.elements[i].document==main_document){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function containsFunction(){
+	for (var i=0;i<this.elements.length;i++){
+		if (this.elements[i] instanceof Document && this.elements[i].document==main_document){
+			if (this.elements[i-2] instanceof Function){
+				//alert("YESSSS ="+this.elements[i-2].function);
+				return this.elements[i-2].function;
+			}
+		}
+	}
+
+	return "send";
+}
+
+function getFirstChannelFromTheBack(){
+	for (var i=this.elements.length-1;i>=0;--i){
+		if (this.elements[i] instanceof Channel){
+			return this.elements[i].channel;
+			break;
+		}
+	}
+}
+
+function getChannelAfterExclamationMark(my_channel){
+	for (var i=0;i<this.elements.length;i++){
+		if (this.elements[i] instanceof Channel && this.elements[i].channel==my_channel){
+			if (this.elements[i+1] instanceof Connector && this.elements[i+1].connector == '!'){
+				//alert("I am in!="+this.elements[i+2].channel);
+				return this.elements[i+2].channel;
+			}
+		}
+	}
+}
+
+function containsChannel(my_channel){
+	for (var i=this.elements.length-1;i>=0;--i){
+		if (this.elements[i] instanceof Channel && this.elements[i].channel==my_channel){
+			return true
+		}
+	}
 }
 
 // Print all elements
@@ -25,7 +83,7 @@ ProcessDefinition.prototype.toString = function toStringProcessDefinition(){
 	return myString;
 }
 
-// Process -------------------------
+// Process -----------------------------------------------------------------------
 function Process(my_process){
 	this.process=my_process;
 }
@@ -42,7 +100,7 @@ Process.prototype.toString = function toStringProcess(){
 	}
 }
 
-// Connector -------------------------
+// Connector -----------------------------------------------------------------------
 function Connector(my_connector){
 	this.connector=my_connector;
 }
@@ -53,7 +111,7 @@ Connector.prototype.toString = function toStringConnector(){
 	return myString;
 }
 
-// Parentheses -------------------------
+// Parentheses -----------------------------------------------------------------------
 function Parentheses(my_parentheses){
 	this.parentheses=my_parentheses;
 }
@@ -64,7 +122,7 @@ Parentheses.prototype.toString = function toStringParentheses(){
 	return myString;
 }
 
-// Variable -------------------------
+// Variable -----------------------------------------------------------------------
 function Variable(my_variable){
 	this.variable=my_variable;
 }
@@ -75,7 +133,7 @@ Variable.prototype.toString = function toStringVariable(){
 	return myString;
 }
 
-// TempVariable -------------------------
+// TempVariable -----------------------------------------------------------------------
 function TempVariable(my_temp_variable){
 	this.temp_variable=my_temp_variable;
 }
@@ -86,7 +144,7 @@ TempVariable.prototype.toString = function toStringTempVariable(){
 	return myString;
 }
 
-// Channel -------------------------
+// Channel -----------------------------------------------------------------------
 function Channel(my_channel){
 	this.channel=my_channel;
 }
@@ -97,7 +155,7 @@ Channel.prototype.toString = function toStringTempChannel(){
 	return myString;
 }
 
-// Document ------------------------
+// Document ----------------------------------------------------------------------
 function Document(my_document){
 	this.document=my_document;
 }
@@ -108,7 +166,7 @@ Document.prototype.toString = function toStringDocument(){
 	return myString;
 }
 
-// Function -------------------------
+// Function -----------------------------------------------------------------------
 function Function(my_function){
 	this.function=my_function;
 }
@@ -119,7 +177,7 @@ Function.prototype.toString = function toStringFunction(){
 	return myString;
 }
 
-// New -------------------------
+// New -----------------------------------------------------------------------
 function New(my_channel){
 	this.channel=my_channel;
 }
@@ -130,7 +188,7 @@ New.prototype.toString = function toStringNew(){
 	return myString+")";
 }
 
-//  -------------------------
+//  -----------------------------------------------------------------------
 function Error(my_error){
 	this.error=my_error;
 }
@@ -265,6 +323,22 @@ function identifyTextSegment(input){
 }
 
 // drawing functions ****************************************************************
+function drawLineWithText(fromX, fromY, toX, toY, text){
+		ctx.moveTo(fromX, fromY);
+		ctx.lineTo(toX, toY);
+
+		ctx.moveTo(toX-4, toY);
+		ctx.lineTo(toX-10-4, toY-10);
+		ctx.moveTo(toX-4, toY);
+		ctx.lineTo(toX-10-4, toY+10);
+		ctx.stroke();
+
+		ctx.font = "10px Arial";
+		ctx.lineWidth="1";
+		ctx.fillStyle = '#000000';
+		ctx.strokeText(text, fromX+50, fromY-5);
+}
+
 function drawBoxWithTextAndSwimLane(ctx, x, y, text){
 	ctx.lineWidth="4";
 	ctx.rect(x,y,110,50);
@@ -275,9 +349,9 @@ function drawBoxWithTextAndSwimLane(ctx, x, y, text){
 	ctx.strokeText(text,15+x,30+y);
 
 	ctx.moveTo(x+50,y+50);
-	ctx.lineTo(x+50,y+330);
+	ctx.lineTo(x+50,y+275);
 
-	ctx.fillRect(x+46,y+65,8,260);
+	ctx.fillRect(x+46,y+65,8,200);
 	ctx.stroke();
 }
 
@@ -306,10 +380,12 @@ function drawUseCase(ctx, x, y){
 	ctx.moveTo(x+20,y+60);
 	ctx.lineTo(x+40,y+70);
 
-	ctx.moveTo(x+23,y+80);
-	ctx.lineTo(x+23,y+345);
+	ctx.lineWidth = 2;
 
-	ctx.fillRect(x+19,y+85,8,255);
+	ctx.moveTo(x+23,y+80);
+	ctx.lineTo(x+23,y+290);
+
+	ctx.fillRect(x+19,y+85,8,195);
 	ctx.stroke();
 }
 
