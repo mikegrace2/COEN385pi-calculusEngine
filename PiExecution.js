@@ -3,6 +3,7 @@
 var startNode= null; // Which is the start node
 var main_document=null; // Which is the main document for send it around
 var process_array=new Array(); // Collects all processes
+var highlight_step=null;
 
 // *****************************************************************************
 // Classes *******************************************************************

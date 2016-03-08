@@ -3,9 +3,11 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Pi-Calculus</title>
+	<meta http-equiv="refresh" content="5" />
 	<script src="PiExecution.js" type="text/javascript"></script>
 	<script src="PiExecution_drawing.js" type="text/javascript"></script>
 	<script src="PiExecution_utilities.js" type="text/javascript"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 </head>
 <body>
 	<canvas id="myCanvas" width="815" height="340" style="border:1px solid black;">
@@ -18,6 +20,7 @@
 		main_document=getUrlVars()["main_document"];
 		var picode = decodeURIComponent(getUrlVars()["picode"]); // get picode
 		var picode_array = picode.split('\n'); // split it up into lines
+		highlight_step=getUrlVars()["highlight_step"];
 
 		// Delete unused lines ****************************************************
 		for(var i=0;i<picode_array.length;i++){
@@ -47,145 +50,183 @@
 		// Brings it in the right order
 		process_array.reverse();
 
+		// ****************************************************************
 		// CANVAS *********************************************************
 		var canvas = document.getElementById("myCanvas");
 		var ctx = canvas.getContext("2d");
 
-		ctx.font = "30px Arial";
-		ctx.fillStyle = '#000000';
+		function drawBoxesLinesUseCases(highlightCurrentStep){
+			ctx.font = "30px Arial";
+			ctx.fillStyle = '#000000';
 
-		// Create a headline --------------------------
-		var headline="";
-		for(var i=0;i<process_array.length;i++){
-			headline=headline+process_array[i].process+"->";
-		}
-		headline=headline.substr(0, headline.length-2);
-		ctx.strokeText(headline, 5, 30);
+			// Create a headline --------------------------
+			var headline="";
+			for(var i=0;i<process_array.length;i++){
+				headline=headline+process_array[i].process+"->";
+			}
+			headline=headline.substr(0, headline.length-2);
+			ctx.strokeText(headline, 5, 30);
 
-		// create the use cases and the objects --------
-		var a=100;
-		var b=55;
-		for(var i=0;i<process_array.length;i++){
-			if (process_array[i].process==startNode){
-				drawUseCase(ctx, 5, 40);
-				process_array[i].x_coord=5;
-				process_array[i].y_coord=40
-			}else{
-				drawBoxWithTextAndSwimLane(ctx, a, b, process_array[i].process);
-				process_array[i].x_coord=a;
-				process_array[i].y_coord=b;
-				a+=150;
+			// create the use cases and the objects --------
+			var a=100;
+			var b=55;
+			for(var i=0;i<process_array.length;i++){
+				if (process_array[i].process==startNode){
+					drawUseCase(ctx, 5, 40, '#000000');
+					process_array[i].x_coord=5;
+					process_array[i].y_coord=40
+				}else{
+					drawBoxWithTextAndSwimLane(ctx, a, b, process_array[i].process, '#000000');
+					process_array[i].x_coord=a;
+					process_array[i].y_coord=b;
+					a+=150;
+				}
 			}
 		}
 
 		// ***************************************************************************************************
 		// Difficult part ************************************************************************************
 		// Draw lines ****************************************************************************************
-		var process_array_clone = process_array.slice(0); // clone array
-		var myAddX=50; // start coordinates for the line drawing
-		var myAddY=100;
+		function drawLines(highlightCurrentStep){
+			var myColor='#000000';
+			var process_array_clone = process_array.slice(0); // clone array
+			var myAddX=50; // start coordinates for the line drawing
+			var myAddY=100;
 
-		// step 1 --------------------------------------------------------------------------------------------
-		// Draw from useCase to the first object --- there is no real hint in the pi-calculus notation, but it makes sense in a sequence diagram
-		// Create a data object
-		var docLink0={
-			processDef_from:process_array_clone[0],
-			processDef_to:process_array_clone[1],
-			which_channel_from:null,
-			which_channel_next:null,
-			text:"create("+main_document+")"
-		};
-
-		drawLineWithText(
-			docLink0.processDef_from.x_coord+20, docLink0.processDef_from.y_coord+115,
-			docLink0.processDef_to.x_coord+myAddX, docLink0.processDef_to.y_coord+myAddY,
-			docLink0.text);
-
-		// step 2 --------------------------------------------------------------------------------------------
-		// Create a data object
-		var docLink1={
-			processDef_from:null,
-			processDef_to:null,
-			which_channel_from:null,
-			which_channel_next:null,
-			text:"send("+main_document+")"
-		};
-
-		// Search for the first doc occurence
-		var i=1;
-		for(;i<process_array_clone.length;i++){
-			// search for the document
-			if (process_array_clone[i].searchForDoc(main_document)==true){
-				docLink1.processDef_from=process_array[i];
-				break;
+			// step 1 --------------------------------------------------------------------------------------------
+			if (highlightCurrentStep==1){
+				myColor='#ff0000';
+			}else{
+				myColor='#000000';
 			}
-		}
 
-		// Get the channel assigned to this document
-		docLink1.which_channel_from=docLink1.processDef_from.getFirstChannelFromTheBack();
+			// Draw from useCase to the first object --- there is no real hint in the pi-calculus notation, but it makes sense in a sequence diagram
+			// Create a data object
+			var docLink0={
+				processDef_from:process_array_clone[0],
+				processDef_to:process_array_clone[1],
+				which_channel_from:null,
+				which_channel_next:null,
+				text:"create("+main_document+")"
+			};
 
-		// Search in the following processDefs for the same channel
-		for(;i<process_array_clone.length;i++){
-			var isContainingChannel=process_array_clone[i].containsChannel(docLink1.which_channel_from);
-			if (isContainingChannel==true){
-				docLink1.processDef_to=process_array_clone[i];
+			drawLineWithText(
+				docLink0.processDef_from.x_coord+20, docLink0.processDef_from.y_coord+115,
+				docLink0.processDef_to.x_coord+myAddX, docLink0.processDef_to.y_coord+myAddY,
+				docLink0.text,
+				myColor);
+
+			// step 2 --------------------------------------------------------------------------------------------
+			if (highlightCurrentStep==2){
+				myColor='#ff0000';
+			}else{
+				myColor='#000000';
 			}
-		}
 
-		// Draw a line
-		myAddY+=10; // make it a more visible that we have different lines
-		drawLineWithText(
-			docLink1.processDef_from.x_coord+myAddX, docLink1.processDef_from.y_coord+myAddY,
-			docLink1.processDef_to.x_coord+myAddX, docLink1.processDef_to.y_coord+myAddY,
-			docLink1.text);
+			// Create a data object
+			var docLink1={
+				processDef_from:null,
+				processDef_to:null,
+				which_channel_from:null,
+				which_channel_next:null,
+				text:"send("+main_document+")"
+			};
 
-		// step 3 -----------------------------------------------------------------------------------------
-		// Get from server the next link
-		// Create a data object
-		var docLink2={
-			processDef_from:null,
-			processDef_to:null,
-			which_channel_from:docLink1.processDef_to.getChannelAfterExclamationMark(docLink1.which_channel_from),
-			which_channel_next:docLink1.processDef_to.getChannelAfterExclamationMark(docLink1.which_channel_from),
-			text:"send("+main_document+")"
-		};
+			// Search for the first doc occurence
+			var i=1;
+			for(;i<process_array_clone.length;i++){
+				// search for the document
+				if (process_array_clone[i].searchForDoc(main_document)==true){
+					docLink1.processDef_from=process_array[i];
+					break;
+				}
+			}
 
-		var isFirst=true;
-		for(i=1;i<process_array_clone.length;i++){
-			if (process_array_clone[i].containsChannel(docLink2.which_channel_next)){
-				if (isFirst==true){
-					isFirst=false;
-					docLink2.processDef_from=process_array_clone[i];
-				}else{ // wait for the first occurence
-					docLink2.processDef_to=process_array_clone[i];
-					docLink2.text=process_array_clone[i].docContainsFunction().toString();
+			// Get the channel assigned to this document
+			docLink1.which_channel_from=docLink1.processDef_from.getFirstChannelFromTheBack();
+
+			// Search in the following processDefs for the same channel
+			for(;i<process_array_clone.length;i++){
+				var isContainingChannel=process_array_clone[i].containsChannel(docLink1.which_channel_from);
+				if (isContainingChannel==true){
+					docLink1.processDef_to=process_array_clone[i];
+				}
+			}
+
+			// Draw a line
+			myAddY+=10; // make it a more visible that we have different lines
+			drawLineWithText(
+				docLink1.processDef_from.x_coord+myAddX, docLink1.processDef_from.y_coord+myAddY,
+				docLink1.processDef_to.x_coord+myAddX, docLink1.processDef_to.y_coord+myAddY,
+				docLink1.text,
+				myColor);
+
+			// step 3 -----------------------------------------------------------------------------------------
+			if (highlightCurrentStep==3){
+				myColor='#ff0000';
+			}else{
+				myColor='#000000';
+			}
+
+			// Get from server the next link
+			// Create a data object
+			var docLink2={
+				processDef_from:null,
+				processDef_to:null,
+				which_channel_from:docLink1.processDef_to.getChannelAfterExclamationMark(docLink1.which_channel_from),
+				which_channel_next:docLink1.processDef_to.getChannelAfterExclamationMark(docLink1.which_channel_from),
+				text:"send("+main_document+")"
+			};
+
+			var isFirst=true;
+			for(i=1;i<process_array_clone.length;i++){
+				if (process_array_clone[i].containsChannel(docLink2.which_channel_next)){
+					if (isFirst==true){
+						isFirst=false;
+						docLink2.processDef_from=process_array_clone[i];
+					}else{ // wait for the first occurence
+						docLink2.processDef_to=process_array_clone[i];
+						docLink2.text=process_array_clone[i].docContainsFunction().toString();
+						break;
+					}
+				}
+			}
+
+			// Draw a line
+			myAddY+=10; // make it a more visible that we have different lines
+			drawLineWithText(
+				docLink2.processDef_from.x_coord+myAddX, docLink2.processDef_from.y_coord+myAddY,
+				docLink2.processDef_to.x_coord+myAddX, docLink2.processDef_to.y_coord+myAddY,
+				docLink2.text,
+				myColor);
+
+			// step 4 are there more functions ----------------------------------------------------------------------
+			if (highlightCurrentStep==3){
+				myColor='#ff0000';
+			}else{
+				myColor='#000000';
+			}
+
+			for(i=1;i<process_array_clone.length;i++){
+				if (process_array_clone[i].boolContainsFunction() && process_array_clone[i].process!=docLink2.processDef_to.process){
+					// Draw a line
+					myAddY+=25; // make it a more visible that we have different lines
+					drawLineWithText(
+					docLink2.processDef_from.x_coord+myAddX, docLink2.processDef_from.y_coord+myAddY,
+					process_array_clone[i].x_coord+myAddX,process_array_clone[i].y_coord+myAddY,
+					process_array_clone[i].docContainsFunction().toString(),
+					myColor);
+
 					break;
 				}
 			}
 		}
 
-		// Draw a line
-		myAddY+=10; // make it a more visible that we have different lines
-		drawLineWithText(
-			docLink2.processDef_from.x_coord+myAddX, docLink2.processDef_from.y_coord+myAddY,
-			docLink2.processDef_to.x_coord+myAddX, docLink2.processDef_to.y_coord+myAddY,
-			docLink2.text);
-
-		// step 4 are there more functions ----------------------------------------------------------------------
-		for(i=1;i<process_array_clone.length;i++){
-			if (process_array_clone[i].boolContainsFunction() && process_array_clone[i].process!=docLink2.processDef_to.process){
-				//alert("YEAAAHHHHHH="+process_array_clone[i].process+" == "+docLink2.processDef_to.process);
-
-				// Draw a line
-				myAddY+=25; // make it a more visible that we have different lines
-				drawLineWithText(
-				docLink2.processDef_from.x_coord+myAddX, docLink2.processDef_from.y_coord+myAddY,
-				process_array_clone[i].x_coord+myAddX,process_array_clone[i].y_coord+myAddY,
-				process_array_clone[i].docContainsFunction().toString());
-
-				break;
-			}
-		}
+		// ***************************************************************************************************
+		// animation part ************************************************************************************
+		//ctx.clearRect(0, 0, 815, 340);
+		drawBoxesLinesUseCases(highlight_step);
+		drawLines(highlight_step);
 	</script>
 	<p>
 		<hr>
@@ -205,6 +246,17 @@
 		</script>
 		<hr>
 	</p>
-	<button onclick="goBack()">Go Back</button>
+	<button onclick="goBack()">Go Back</button><br>
+	<script>
+		sleep(1000);
+		if (highlight_step<=2){
+			highlight_step++;
+		}else{
+			highlight_step=1;
+		}
+
+		var newURL = updateURLParameter(window.location.href, 'highlight_step', ''+highlight_step);
+	    window.location.href=newURL;
+	</script>
 </body>
 </html>

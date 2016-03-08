@@ -5,7 +5,7 @@
 	<title>Pi-Calculus</title>
 	<script src="PiCalculusEngine.js" type="text/javascript"></script>
 </head>
-<body onload="selectExample('2');">
+<body onload="selectExample('1');">
 	<form id="pi" action="PiExecution.html" method="get">
 		<h1>Pi-Calculus Engine</h1>
 		<table border="0">
@@ -50,6 +50,7 @@
 		<input type="text" name="start" value="Life"/><br/>
 		Whats your main document?
 		<input type="text" name="main_document" value="doc"/><br/>
+		<input type="hidden" name="highlight_step" value="1"/><br/>
 		<textarea name="picode" rows="7" cols="100" style="background-color:beige;">
 		</textarea>
 		</p>

@@ -1,5 +1,6 @@
 // drawing functions ****************************************************************
-function drawLineWithText(fromX, fromY, toX, toY, text){
+function drawLineWithText(fromX, fromY, toX, toY, text, color){
+		ctx.strokeStyle = color;
 		ctx.moveTo(fromX, fromY);
 		ctx.lineTo(toX, toY);
 
@@ -11,17 +12,20 @@ function drawLineWithText(fromX, fromY, toX, toY, text){
 
 		ctx.font = "10px Arial";
 		ctx.lineWidth="1";
-		ctx.fillStyle = '#000000';
+		ctx.strokeStyle = color;
 		ctx.strokeText(text, fromX+50, fromY-5);
+
+		ctx.strokeStyle = '#000000';
+		ctx.stroke();
 }
 
-function drawBoxWithTextAndSwimLane(ctx, x, y, text){
+function drawBoxWithTextAndSwimLane(ctx, x, y, text, color){
 	ctx.lineWidth="4";
 	ctx.rect(x,y,110,50);
 
 	ctx.font = "25px Arial";
 	ctx.lineWidth="2";
-	ctx.fillStyle = '#000000';
+	ctx.fillStyle = color;
 	ctx.strokeText(text,15+x,30+y);
 
 	ctx.moveTo(x+50,y+50);
@@ -29,13 +33,16 @@ function drawBoxWithTextAndSwimLane(ctx, x, y, text){
 
 	ctx.fillRect(x+46,y+65,8,200);
 	ctx.stroke();
+
+	ctx.fillStyle = '#000000';
+	ctx.stroke();
 }
 
-function drawUseCase(ctx, x, y){
+function drawUseCase(ctx, x, y, color){
 	ctx.beginPath();
 	ctx.arc(x+20, y+20, 10, 0,Math.PI*2, true);
 	ctx.lineWidth = 3;
-	ctx.strokeStyle = '#000000';
+	ctx.strokeStyle = color;
 	ctx.closePath();
 
 	ctx.moveTo(x+20,y+30);
@@ -62,5 +69,8 @@ function drawUseCase(ctx, x, y){
 	ctx.lineTo(x+23,y+290);
 
 	ctx.fillRect(x+19,y+85,8,195);
+	ctx.stroke();
+
+	ctx.strokeStyle ='#000000';
 	ctx.stroke();
 }
