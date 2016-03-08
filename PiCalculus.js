@@ -1,10 +1,12 @@
+// *****************************************************************************
 // Global variable ***********************************************************
 var startNode= null; // Which is the start node
 var main_document=null; // Which is the main document for send it around
 var process_array=new Array(); // Collects all processes
 
+// *****************************************************************************
 // Classes *******************************************************************
-// Process Definition ------------------------------------------------------------------
+// Process Definition class (represents one pi-calculus line) ------------------------------
 function ProcessDefinition(my_process_name, my_code, my_x, my_y, my_elements, my_sequence){
 	this.process=my_process_name;
 	this.code=my_code;
@@ -19,9 +21,9 @@ function ProcessDefinition(my_process_name, my_code, my_x, my_y, my_elements, my
 	this.docContainsFunction=docContainsFunction;
 }
 
-function searchForDoc(){
+function searchForDoc(my_doc){
 	for (var i=0;i<this.elements.length;i++){
-		if (this.elements[i] instanceof Document && this.elements[i].document==main_document){
+		if (this.elements[i] instanceof Document && this.elements[i].document==my_doc){
 			return true;
 		}
 	}
@@ -66,7 +68,7 @@ function containsChannel(my_channel){
 	}
 }
 
-// Print all elements
+// Print all elements - override toString() method
 ProcessDefinition.prototype.toString = function toStringProcessDefinition(){
 	var myString="";
 	myString=myString+identifyTextSegment(this.process)+" = ";
@@ -78,11 +80,12 @@ ProcessDefinition.prototype.toString = function toStringProcessDefinition(){
 	return myString;
 }
 
-// Process -----------------------------------------------------------------------
+// Process class -----------------------------------------------------------------------
 function Process(my_process){
 	this.process=my_process;
 }
 
+// Override toString() method
 Process.prototype.toString = function toStringProcess(){
 	if (this.process==startNode){
 		var myString="<font color='0000ff'>start_process_";
@@ -95,78 +98,85 @@ Process.prototype.toString = function toStringProcess(){
 	}
 }
 
-// Connector -----------------------------------------------------------------------
+// Connector class -----------------------------------------------------------------------
 function Connector(my_connector){
 	this.connector=my_connector;
 }
 
+// Override toString() method
 Connector.prototype.toString = function toStringConnector(){
 	var myString=" <font color='ff0000'>";
 	myString=myString+this.connector+"</font> ";
 	return myString;
 }
 
-// Parentheses -----------------------------------------------------------------------
+// Parentheses class -----------------------------------------------------------------------
 function Parentheses(my_parentheses){
 	this.parentheses=my_parentheses;
 }
 
+// Override toString() method
 Parentheses.prototype.toString = function toStringParentheses(){
 	var myString="<font color='00ff00'>";
 	myString=myString+this.parentheses+"</font>";
 	return myString;
 }
 
-// Variable -----------------------------------------------------------------------
+// Variable class -----------------------------------------------------------------------
 function Variable(my_variable){
 	this.variable=my_variable;
 }
 
+// Override toString() method
 Variable.prototype.toString = function toStringVariable(){
 	var myString="";
 	myString=myString+this.variable;
 	return myString;
 }
 
-// TempVariable -----------------------------------------------------------------------
+// TempVariable class -----------------------------------------------------------------------
 function TempVariable(my_temp_variable){
 	this.temp_variable=my_temp_variable;
 }
 
+// Override toString() method
 TempVariable.prototype.toString = function toStringTempVariable(){
 	var myString="temp_var_";
 	myString=myString+this.temp_variable;
 	return myString;
 }
 
-// Channel -----------------------------------------------------------------------
+// Channel class -----------------------------------------------------------------------
 function Channel(my_channel){
 	this.channel=my_channel;
 }
 
+// Override toString() method
 Channel.prototype.toString = function toStringTempChannel(){
 	var myString="channel_";
 	myString=myString+this.channel;
 	return myString;
 }
 
-// Document ----------------------------------------------------------------------
+// Document class ----------------------------------------------------------------------
 function Document(my_document){
 	this.document=my_document;
 }
 
+// Override toString() method
 Document.prototype.toString = function toStringDocument(){
 	var myString="";
 	myString=myString+this.document;
 	return myString;
 }
 
-// Function -----------------------------------------------------------------------
+// Function class -----------------------------------------------------------------------
 function Function(my_function, my_doc){
 	this.function=my_function;
 	this.doc=my_doc;
 }
 
+// Override toString() method
 Function.prototype.toString = function toStringFunction(){
 	var myString="function_";
 	myString=myString+this.function;
@@ -174,39 +184,31 @@ Function.prototype.toString = function toStringFunction(){
 	return myString+")";
 }
 
-// New -----------------------------------------------------------------------
+// New class -----------------------------------------------------------------------
 function New(my_channel){
 	this.channel=my_channel;
 }
 
+// Override toString() method
 New.prototype.toString = function toStringNew(){
 	var myString="new(";
 	myString=myString+this.channel.toString();
 	return myString+")";
 }
 
-//  -----------------------------------------------------------------------
+// Error class -----------------------------------------------------------------------
 function Error(my_error){
 	this.error=my_error;
 }
 
+// Override toString() method
 Error.prototype.toString = function toStringNew(){
 	var myString="ERROR_";
 	myString=myString+this.error;
 	return myString;
 }
 
-// functions *****************************************************************
-function getUrlVars() {
-	var vars = {};
-	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {vars[key] = value;});
-	return vars;
-}
-
-function goBack() {
-	window.history.back();
-}
-
+// *****************************************************************************
 // Parsing part ****************************************************************
 // connetors: ? ! new() . | ( ) =
 function parsingALine(process_obj){
@@ -322,111 +324,5 @@ function identifyTextSegment(input){
 		return new Function(text, null);
 	}else{
 		return new Error(text);
-	}
-}
-
-// drawing functions ****************************************************************
-function drawLineWithText(fromX, fromY, toX, toY, text){
-		ctx.moveTo(fromX, fromY);
-		ctx.lineTo(toX, toY);
-
-		ctx.moveTo(toX-4, toY);
-		ctx.lineTo(toX-10-4, toY-10);
-		ctx.moveTo(toX-4, toY);
-		ctx.lineTo(toX-10-4, toY+10);
-		ctx.stroke();
-
-		ctx.font = "10px Arial";
-		ctx.lineWidth="1";
-		ctx.fillStyle = '#000000';
-		ctx.strokeText(text, fromX+50, fromY-5);
-}
-
-function drawBoxWithTextAndSwimLane(ctx, x, y, text){
-	ctx.lineWidth="4";
-	ctx.rect(x,y,110,50);
-
-	ctx.font = "25px Arial";
-	ctx.lineWidth="2";
-	ctx.fillStyle = '#000000';
-	ctx.strokeText(text,15+x,30+y);
-
-	ctx.moveTo(x+50,y+50);
-	ctx.lineTo(x+50,y+275);
-
-	ctx.fillRect(x+46,y+65,8,200);
-	ctx.stroke();
-}
-
-function drawUseCase(ctx, x, y){
-	ctx.beginPath();
-	ctx.arc(x+20, y+20, 10, 0,Math.PI*2, true);
-	ctx.lineWidth = 3;
-	ctx.strokeStyle = '#000000';
-	ctx.closePath();
-
-	ctx.moveTo(x+20,y+30);
-	ctx.lineTo(x+20,y+40);
-
-	ctx.moveTo(x+5,y+50);
-	ctx.lineTo(x+20,y+40);
-
-	ctx.moveTo(x+20,y+40);
-	ctx.lineTo(x+40,y+50);
-
-	ctx.moveTo(x+20,y+40);
-	ctx.lineTo(x+20,y+60);
-
-	ctx.moveTo(x+5,y+70);
-	ctx.lineTo(x+20,y+60);
-
-	ctx.moveTo(x+20,y+60);
-	ctx.lineTo(x+40,y+70);
-
-	ctx.lineWidth = 2;
-
-	ctx.moveTo(x+23,y+80);
-	ctx.lineTo(x+23,y+290);
-
-	ctx.fillRect(x+19,y+85,8,195);
-	ctx.stroke();
-}
-
-// PiExecution.html page ******************************************
-function selectExample(sel){
-	if (sel=='1'){
-		var example=
-		"Printer=b?doc.Println(doc).Printer\n"+
-		"Server=a!b.Server\n"+
-		"Client=a?p.p!doc\n"+
-		"Life=new(a).new(b).(Client|Server|Printer)\n";
-		document.getElementsByName("picode")[0].value=example;
-		document.getElementsByName("start")[0].value="Life";
-		document.getElementsByName("main_document")[0].value="doc";
-	}else if (sel=='2'){
-		var example=
-		"Printer1=b?doc.Println(doc).Printer1\n"+
-		"Printer2=c?doc.Println(doc).Printer2\n"+
-		"Server=(a!b+a!c).Server\n"+
-		"Client=a?p.p!doc\n"+
-		"Life=new(a).new(b).new(c).(Client|Server|Printer1|Printer2)\n";
-		document.getElementsByName("picode")[0].value=example;
-		document.getElementsByName("start")[0].value="Life";
-		document.getElementsByName("main_document")[0].value="doc";
-	}else if (sel=='3'){
-		var example=
-		"Printer1=b?doc.Println(doc).Printer1\n"+
-		"Printer2=c?doc.Println(doc).Printer2\n"+
-		"Server=((b?e.a!e)|(c?f.a!f)|(b?e.d!e)|(c?f.d!f)).Server\n"+
-		"Client1=a?p.p!doc\n"+
-		"Client2=d?p.p!doc\n"+
-		"Life=new(a).new(b).new(c).new(d).new(e).new(f).(Client1|Client2|Server|Printer1|Printer2)\n";
-		document.getElementsByName("picode")[0].value=example;
-		document.getElementsByName("start")[0].value="Life";
-		document.getElementsByName("main_document")[0].value="doc";
-	}else{
-		document.getElementsByName("picode")[0].value="ERROR!";
-		document.getElementsByName("start")[0].value="ERROR";
-		document.getElementsByName("main_document")[0].value="ERROR";
 	}
 }

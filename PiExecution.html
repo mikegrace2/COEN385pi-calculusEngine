@@ -4,6 +4,8 @@
 	<meta charset="utf-8"/>
 	<title>Pi-Calculus</title>
 	<script src="PiCalculus.js" type="text/javascript"></script>
+	<script src="PiCalculus_drawing.js" type="text/javascript"></script>
+	<script src="PiCalculus_utilities.js" type="text/javascript"></script>
 </head>
 <body>
 	<canvas id="myCanvas" width="815" height="340" style="border:1px solid black;">
@@ -113,7 +115,7 @@
 		var i=1;
 		for(;i<process_array_clone.length;i++){
 			// search for the document
-			if (process_array_clone[i].searchForDoc()==true){
+			if (process_array_clone[i].searchForDoc(main_document)==true){
 				docLink1.processDef_from=process_array[i];
 				break;
 			}
