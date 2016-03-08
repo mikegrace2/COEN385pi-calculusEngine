@@ -2,7 +2,6 @@
 var startNode= null; // Which is the start node
 var main_document=null; // Which is the main document for send it around
 var process_array=new Array(); // Collects all processes
-var public_channels_array=new Array(); // contains public channels
 
 // Classes *******************************************************************
 // Process Definition ------------------------------------------------------------------
@@ -32,15 +31,12 @@ function searchForDoc(){
 
 function docContainsFunction(){
 	for (var i=0;i<this.elements.length;i++){
-		if (this.elements[i] instanceof Document && this.elements[i].document==main_document){
-			if (this.elements[i-2] instanceof Function){
-				//alert("YESSSS ="+this.elements[i-2].function);
-				return this.elements[i-2].function;
-			}
+		if (this.elements[i] instanceof Function){
+			return this.elements[i].function+"("+this.elements[i].doc+")";
 		}
 	}
 
-	return "send";
+	return "";
 }
 
 function getFirstChannelFromTheBack(){
@@ -160,20 +156,22 @@ function Document(my_document){
 }
 
 Document.prototype.toString = function toStringDocument(){
-	var myString="document_";
+	var myString="";
 	myString=myString+this.document;
 	return myString;
 }
 
 // Function -----------------------------------------------------------------------
-function Function(my_function){
+function Function(my_function, my_doc){
 	this.function=my_function;
+	this.doc=my_doc;
 }
 
 Function.prototype.toString = function toStringFunction(){
 	var myString="function_";
 	myString=myString+this.function;
-	return myString;
+	myString=myString+"("+this.doc;
+	return myString+")";
 }
 
 // New -----------------------------------------------------------------------
@@ -213,6 +211,7 @@ function goBack() {
 // connetors: ? ! new() . | ( ) =
 function parsingALine(process_obj){
 	var text="";
+	var foundFunction=null;
 	for (var i=0;i<process_obj.code.length;i++){
 		if (
 			process_obj.code[i]=='?' ||
@@ -230,14 +229,19 @@ function parsingALine(process_obj){
 
 			// Special case for "new(a)"
 			if (obj instanceof New){
-				var next_channel_obj=identifyTextSegment(process_obj.code[++i]); // ++i we do not need '('
+				var next_channel_obj=identifyTextSegment(process_obj.code[++i]);
 				obj.channel=next_channel_obj;
-				public_channels_array.push(obj); // add it to public channels
 				++i;// we also do not need ')'
-			}else{
-				var obj=identifyTextSegment(text);
-				process_obj.elements.push(new Parentheses(process_obj.code[i]));
+			} else if (obj instanceof Function && foundFunction == null){
+				//alert("FOUND FUNCTION, and saved it! obj="+obj);
+				foundFunction=obj;
+			} else if (obj instanceof Document && foundFunction != null){
+				//alert("Document for Function! obj="+obj);
+				foundFunction.doc=obj;
+				process_obj.elements.pop();// not needed anymore, already included into function
+				foundFunction=null;
 			}
+
 			text=""; // reset it
 		} else {
 			// add next letter to text
@@ -315,7 +319,7 @@ function identifyTextSegment(input){
 	}
 
 	if (text[0] === text[0].toUpperCase()){
-		return new Function(text);
+		return new Function(text, null);
 	}else{
 		return new Error(text);
 	}

@@ -156,7 +156,7 @@
 					docLink2.processDef_from=process_array_clone[i];
 				}else{ // wait for the first occurence
 					docLink2.processDef_to=process_array_clone[i];
-					docLink2.text="("+process_array_clone[i].docContainsFunction()+")";
+					docLink2.text=process_array_clone[i].docContainsFunction().toString();
 					break;
 				}
 			}
