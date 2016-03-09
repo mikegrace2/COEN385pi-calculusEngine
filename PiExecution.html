@@ -76,6 +76,7 @@
 					}else{
 						myColor='#000000';
 					}
+
 					drawUseCase(ctx, 5, 40, myColor);
 					process_array[i].x_coord=5;
 					process_array[i].y_coord=40
@@ -260,18 +261,17 @@
 		</script>
 		<hr>
 	</p>
-	<button onclick="goBack()">Go Back</button><br>
+	<a href="PiCalculusEngine.html">Go Back</a><br>
 	<script>
-		if (navigator.userAgent.toLowerCase().indexOf('firefox')==-1){
+		if (navigator.userAgent.toLowerCase().indexOf('edge')!=-1){
 			sleep(3500);
 			if (highlight_step<=2){
 				highlight_step++;
 			}else{
 				highlight_step=1;
 			}
-
 			var newURL = updateURLParameter(window.location.href, 'highlight_step', ''+highlight_step);
-		    window.location.href=newURL;
+	    	window.location.href=newURL;
 		}
 	</script>
 </body>
